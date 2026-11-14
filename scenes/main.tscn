@@ -1,0 +1,107 @@
+[gd_scene load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://scripts/arena.gd" id="1_arena"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2_player"]
+
+[sub_resource type="ProceduralSkyMaterial" id="SkyMat_1"]
+sky_top_color = Color(0.25, 0.5, 0.9, 1)
+sky_horizon_color = Color(0.7, 0.85, 1, 1)
+
+[sub_resource type="Sky" id="Sky_1"]
+sky_material = SubResource("SkyMat_1")
+
+[sub_resource type="Environment" id="Env_1"]
+background_mode = 2
+sky = SubResource("Sky_1")
+ambient_light_source = 3
+
+[sub_resource type="BoxShape3D" id="GroundShape_1"]
+size = Vector3(40, 1, 40)
+
+[sub_resource type="StandardMaterial3D" id="GrassMat_1"]
+albedo_color = Color(0.35, 0.6, 0.25, 1)
+
+[sub_resource type="PlaneMesh" id="GrassMesh_1"]
+material = SubResource("GrassMat_1")
+size = Vector2(40, 40)
+
+[sub_resource type="StandardMaterial3D" id="RingMat_1"]
+albedo_color = Color(0.85, 0.75, 0.5, 1)
+
+[sub_resource type="CylinderMesh" id="RingMesh_1"]
+material = SubResource("RingMat_1")
+top_radius = 6.0
+bottom_radius = 6.0
+height = 0.02
+
+[node name="Main" type="Node3D"]
+script = ExtResource("1_arena")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Env_1")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.643, -0.766, 0, 0.766, 0.643, 0, 10, 0)
+shadow_enabled = true
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.743, -0.669, 0, 0.669, 0.743, 0, 9, 10)
+current = true
+
+[node name="Ground" type="StaticBody3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+shape = SubResource("GroundShape_1")
+
+[node name="Grass" type="MeshInstance3D" parent="Ground"]
+mesh = SubResource("GrassMesh_1")
+
+[node name="Ring" type="MeshInstance3D" parent="Ground"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0)
+mesh = SubResource("RingMesh_1")
+
+[node name="Player1" parent="." instance=ExtResource("2_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 1, 0)
+player_id = "p1"
+body_color = Color(0.85, 0.1, 0.1, 1)
+
+[node name="Player2" parent="." instance=ExtResource("2_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 1, 0)
+player_id = "p2"
+body_color = Color(0.1, 0.3, 0.9, 1)
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="Score" type="Label" parent="UI"]
+offset_left = 20.0
+offset_top = 15.0
+offset_right = 600.0
+offset_bottom = 50.0
+theme_override_font_sizes/font_size = 28
+text = "P1: 0    P2: 0"
+
+[node name="Message" type="Label" parent="UI"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -500.0
+offset_top = -150.0
+offset_right = 500.0
+offset_bottom = -90.0
+theme_override_font_sizes/font_size = 36
+horizontal_alignment = 1
+text = ""
+
+[node name="Controls" type="Label" parent="UI"]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -50.0
+offset_right = 1200.0
+offset_bottom = -15.0
+theme_override_font_sizes/font_size = 20
+text = "P1: WASD move, SPACE push      P2: Arrows move, ENTER push      R: restart"

@@ -1,0 +1,24 @@
+; Engine configuration file.
+; Naadam Chaos - Godot 4 project
+
+config_version=5
+
+[application]
+
+config/name="Naadam Chaos"
+config/description="A goofy party game about Mongolian Naadam."
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.7", "Forward Plus")
+
+[autoload]
+
+InputSetup="*res://scripts/input_setup.gd"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+
+[physics]
+
+common/physics_ticks_per_second=60
