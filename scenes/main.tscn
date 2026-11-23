@@ -1,6 +1,6 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene format=3 uid="uid://ba8kecfjo4wh3"]
 
-[ext_resource type="Script" path="res://scripts/arena.gd" id="1_arena"]
+[ext_resource type="Script" uid="uid://bidukgaed45h5" path="res://scripts/arena.gd" id="1_arena"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2_player"]
 
 [sub_resource type="ProceduralSkyMaterial" id="SkyMat_1"]
@@ -34,46 +34,51 @@ top_radius = 6.0
 bottom_radius = 6.0
 height = 0.02
 
-[node name="Main" type="Node3D"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_k2e1q"]
+shading_mode = 2
+albedo_color = Color(1, 0.8610478, 0.72128433, 1)
+
+[node name="Main" type="Node3D" unique_id=1099653175]
 script = ExtResource("1_arena")
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=369545742]
 environment = SubResource("Env_1")
 
-[node name="Sun" type="DirectionalLight3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.643, -0.766, 0, 0.766, 0.643, 0, 10, 0)
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=1643666457]
+transform = Transform3D(1, 0, 0, 0, 0.643, 0.766, 0, -0.766, 0.643, 0, 10, 0)
 shadow_enabled = true
+shadow_caster_mask = 4294967167
 
-[node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.743, -0.669, 0, 0.669, 0.743, 0, 9, 10)
+[node name="Camera3D" type="Camera3D" parent="." unique_id=262479695]
+transform = Transform3D(1, 0, 0, 0, 0.743, 0.669, 0, -0.669, 0.743, 0, 9, 10)
 current = true
 
-[node name="Ground" type="StaticBody3D" parent="."]
+[node name="Ground" type="StaticBody3D" parent="." unique_id=606003017]
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground" unique_id=1700853945]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
 shape = SubResource("GroundShape_1")
 
-[node name="Grass" type="MeshInstance3D" parent="Ground"]
+[node name="Grass" type="MeshInstance3D" parent="Ground" unique_id=1516889521]
 mesh = SubResource("GrassMesh_1")
 
-[node name="Ring" type="MeshInstance3D" parent="Ground"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0)
+[node name="Ring" type="MeshInstance3D" parent="Ground" unique_id=970943492]
+transform = Transform3D(0.56632113, 0, -0.8241847, 0, 1, 0, 0.8241847, 0, 0.56632113, 0, 0.01, 0)
 mesh = SubResource("RingMesh_1")
+surface_material_override/0 = SubResource("StandardMaterial3D_k2e1q")
 
-[node name="Player1" parent="." instance=ExtResource("2_player")]
+[node name="Player1" parent="." unique_id=1536935712 instance=ExtResource("2_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 1, 0)
-player_id = "p1"
 body_color = Color(0.85, 0.1, 0.1, 1)
 
-[node name="Player2" parent="." instance=ExtResource("2_player")]
+[node name="Player2" parent="." unique_id=1091263041 instance=ExtResource("2_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 1, 0)
 player_id = "p2"
 body_color = Color(0.1, 0.3, 0.9, 1)
 
-[node name="UI" type="CanvasLayer" parent="."]
+[node name="UI" type="CanvasLayer" parent="." unique_id=604871688]
 
-[node name="Score" type="Label" parent="UI"]
+[node name="Score" type="Label" parent="UI" unique_id=673045692]
 offset_left = 20.0
 offset_top = 15.0
 offset_right = 600.0
@@ -81,7 +86,7 @@ offset_bottom = 50.0
 theme_override_font_sizes/font_size = 28
 text = "P1: 0    P2: 0"
 
-[node name="Message" type="Label" parent="UI"]
+[node name="Message" type="Label" parent="UI" unique_id=580927346]
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -93,9 +98,8 @@ offset_right = 500.0
 offset_bottom = -90.0
 theme_override_font_sizes/font_size = 36
 horizontal_alignment = 1
-text = ""
 
-[node name="Controls" type="Label" parent="UI"]
+[node name="Controls" type="Label" parent="UI" unique_id=29108117]
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
@@ -104,4 +108,4 @@ offset_top = -50.0
 offset_right = 1200.0
 offset_bottom = -15.0
 theme_override_font_sizes/font_size = 20
-text = "P1: WASD move, SPACE push      P2: Arrows move, ENTER push      R: restart"
+text = "P1: WASD + SPACE    P2: Arrows + ENTER    Tipping over? Press push = PALM SAVE    R: restart"
