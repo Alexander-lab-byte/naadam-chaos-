@@ -150,3 +150,35 @@ The menu now has two events: **Bökh** and **Sur kharvaa**.
 - Points: hit +10 · bravery up to +5 · right signal up to +5 · wrong signal −3 · bonk: archer −10, judge −5 · pinned hat: archer −5.
 - CPU vs CPU (300 matches): CPU archer hits ~70%, judge gets bonked on ~10% of arrows, hat pinned ~5%, CPU judge signals right ~88%, a match takes ~46 s.
 - **Check in human playtests:** Is the CPU archer too good? (`AT.botAim`, bigger = worse aim.) Is −10 for a bonk too harsh? Do judges actually stand close, or hide far away? If they hide, raise `AT.brave`.
+
+---
+
+## 9. Wrestling upgrade (2026-11-23): grips, real techniques, new wrestler, Naadam field
+
+**Research:** bökh has **45 base techniques (мэх)** and about **1000 variations** (some sources say 666).
+They come in 3 families: **no-grip** (барьцгүй), **grip** (барьцны), **locked grip** (лав барьцны).
+There are also combo (угсраа) and counter (хариулт) techniques. Before a bout wrestlers slap their thighs.
+
+**Design decision:** not 200 buttons. 2 buttons + direction, and the game picks the REAL technique
+from the situation (direction, rival's lean, rival's movement, grip strength). This keeps the
+"max 2 buttons" rule from section 2, and players still learn real technique names.
+
+- New button **GRAB**: take a grip → hold 1.2 s = locked grip → GRAB + direction = technique.
+- **10 techniques**: Ачих, Сээрэн дунгуй, Дэгээдэх, Тахимдах, Өсгийдөх, Гуядах, Мушгих, Тонгорох, Хөл авах, Хариулт (counter).
+- **Off-balance matters:** the grip spring pulls at chest height, so pushing/pulling makes the rival lean.
+  Throwing the way he already leans adds up to +35% chance. Real wrestling idea, works in the game.
+- **Counter window:** each technique has a 0.2–0.4 s wind-up with a "!" over the target. GRAB in time = Хариулт.
+- **3 results:** clean (hard fall), partial (tipping: PALM SAVE can still save you → clutch moments), fail (зайллаа).
+- **CPU wrestler** (press C) for solo testing.
+- **New wrestler (Blender v2):** chunky stylized human, real face, open-chest zodog with cord, shuudag, gutal. 23 clips.
+- **Naadam field:** trampled grass circle, Nine White Banners (Есөн хөлт цагаан туг), gers, grandstand + crowd that
+  jumps on big moments, two zasuul heralds holding the wrestlers' hats, Mongolian flags (no Soyombo yet), mountains, clouds.
+  Follow camera that zooms with the distance between wrestlers.
+
+**CPU vs CPU test (170 s, 26 rounds):** 19 of 26 rounds were won by a named technique (7 different ones).
+Falls: back 11, knee 6, elbow 4, ring-out 5. Before this update almost every fall was BACK from pushes.
+
+**Check with real people:**
+- Is the leg dive (Хөл авах) too strong? CPU tests use it most.
+- Do players understand the "!" counter window? 0.2 s might be too short for beginners.
+- Anar: check the technique animations against real bökh, fix any that look wrong (see ANIMATIONS.md).

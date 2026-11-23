@@ -8,19 +8,20 @@ extends Node
 var _shake_strength := 0.0
 var _shake_time := 0.0
 var _camera: Camera3D
-var _camera_base: Transform3D
 
 
 func _process(delta: float) -> void:
 	if _camera == null or not is_instance_valid(_camera):
 		return
+	# shake with h_offset / v_offset, so a moving camera rig still works
 	if _shake_time > 0.0:
 		_shake_time -= delta
 		var s := _shake_strength * clampf(_shake_time / 0.25, 0.0, 1.0)
-		_camera.transform = _camera_base
-		_camera.translate(Vector3(randf_range(-s, s), randf_range(-s, s), 0.0))
+		_camera.h_offset = randf_range(-s, s)
+		_camera.v_offset = randf_range(-s, s)
 	else:
-		_camera.transform = _camera_base
+		_camera.h_offset = 0.0
+		_camera.v_offset = 0.0
 		_camera = null
 
 
@@ -29,9 +30,7 @@ func shake(strength := 0.2, time := 0.25) -> void:
 	var cam := get_viewport().get_camera_3d()
 	if cam == null:
 		return
-	if _camera != cam:
-		_camera = cam
-		_camera_base = cam.transform
+	_camera = cam
 	_shake_strength = maxf(_shake_strength if _shake_time > 0.0 else 0.0, strength)
 	_shake_time = maxf(_shake_time, time)
 

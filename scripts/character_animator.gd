@@ -11,10 +11,11 @@ extends Node3D
 ## Other scripts only call these functions:
 ##   play_push()  play_hit()  play_win()  play_lose()  play_brace()
 ##   play_strut()  play_stumble()  reset()
+##   play_grab()  play_mekh(clip)  play_thrown()  play_ready()
 ##   set_team_color(color)  set_full_stomach(0..1)   (MODEL mode only)
 ## Walk / idle is chosen automatically from the body's speed.
 
-enum State { LOCOMOTION, PUSH, HIT, WIN, LOSE, BRACE, STRUT, STUMBLE }
+enum State { LOCOMOTION, PUSH, HIT, WIN, LOSE, BRACE, STRUT, STUMBLE, GRAB, MEKH, THROWN, READY }
 
 ## Animation names inside the Blender file. Change the right side if the
 ## artist used other names. See ANIMATIONS.md for the full list.
@@ -28,10 +29,14 @@ enum State { LOCOMOTION, PUSH, HIT, WIN, LOSE, BRACE, STRUT, STUMBLE }
 	"brace": "palm_brace",
 	"strut": "bayan_khodood_strut",
 	"stumble": "stumble",
+	"grab": "grab",
+	"grip": "grip_idle",
+	"thrown": "thrown",
+	"ready": "thigh_slap",
 }
 ## Clips that repeat forever. Set here so you don't have to tick
 ## "Loop" in the import dialog every time you re-export from Blender.
-@export var looping_clips := ["idle", "walk", "eagle_dance", "lose", "bayan_khodood_strut"]
+@export var looping_clips := ["idle", "walk", "eagle_dance", "lose", "bayan_khodood_strut", "grip_idle", "thrown"]
 ## When hit while running at least this fast (0..1), play the big stumble instead of hit.
 @export var stumble_speed := 0.45
 @export var blend_time := 0.15           ## crossfade between clips (seconds)
@@ -42,6 +47,8 @@ var state := State.LOCOMOTION
 var _state_time := 0.0                   ## seconds since the state started
 var _cycle := 0.0                        ## walk / dance cycle phase
 var _hit_dir := 1.0
+var _mekh_clip := ""                     ## the technique clip playing now (MEKH state)
+var _mekh_len := 0.9
 
 var _body: RigidBody3D
 var _anim: AnimationPlayer               ## only in MODEL mode
@@ -140,6 +147,32 @@ func play_strut() -> void:
 	_set_state(State.STRUT)
 
 
+## Reach in and take the grip (барьц).
+func play_grab() -> void:
+	if state in [State.WIN, State.LOSE, State.STRUT]:
+		return
+	_set_state(State.GRAB)
+
+
+## A technique (мэх): plays the clip with that name (achikh, guyadakh ...).
+func play_mekh(clip: String) -> void:
+	_mekh_clip = clip
+	_mekh_len = 0.9
+	if _anim and _anim.has_animation(clip):
+		_mekh_len = _anim.get_animation(clip).length
+	_set_state(State.MEKH)
+
+
+## Flying through the air after a throw. Ends by itself when the body lands.
+func play_thrown() -> void:
+	_set_state(State.THROWN)
+
+
+## Before the bout: slap the thighs (ready!).
+func play_ready() -> void:
+	_set_state(State.READY)
+
+
 func reset() -> void:
 	_set_state(State.LOCOMOTION)
 	position = Vector3.ZERO
@@ -159,6 +192,14 @@ func _process(delta: float) -> void:
 	elif state == State.BRACE and _state_time > 0.8:
 		_set_state(State.LOCOMOTION)
 	elif state == State.STUMBLE and _state_time > 0.8:
+		_set_state(State.LOCOMOTION)
+	elif state == State.GRAB and _state_time > 0.27:
+		_set_state(State.LOCOMOTION)
+	elif state == State.MEKH and _state_time > _mekh_len:
+		_set_state(State.LOCOMOTION)
+	elif state == State.READY and _state_time > 1.0:
+		_set_state(State.LOCOMOTION)
+	elif state == State.THROWN and _body and not _body.get("is_thrown"):
 		_set_state(State.LOCOMOTION)
 
 	var speed := _speed_ratio()
@@ -188,6 +229,16 @@ func _update_model(speed: float) -> void:
 	match state:
 		State.LOCOMOTION:
 			key = "walk" if speed > 0.1 else "idle"
+			if _body and _body.get("gripping"):
+				key = "grip"
+		State.GRAB:
+			key = "grab"
+		State.THROWN:
+			key = "thrown"
+		State.READY:
+			key = "ready"
+		State.MEKH:
+			key = _mekh_clip
 		State.PUSH:
 			key = "push"
 		State.HIT:
@@ -241,14 +292,14 @@ func _update_placeholder(speed: float, delta: float) -> void:
 				arm_l.x = 0.4
 				arm_r.x = 0.4
 
-		State.PUSH:
+		State.PUSH, State.GRAB, State.MEKH:
 			# both arms shoot forward, body leans in
 			var k := clampf(_state_time / 0.08, 0.0, 1.0)
 			arm_l.x = PI * 0.5 * k
 			arm_r.x = PI * 0.5 * k
 			lean = 0.35 * k
 
-		State.HIT, State.STUMBLE:
+		State.HIT, State.STUMBLE, State.THROWN:
 			# arms flail, body bends back, head wobbles
 			var w := sin(_state_time * 40.0)
 			arm_l.z = -1.6 + w * 0.5

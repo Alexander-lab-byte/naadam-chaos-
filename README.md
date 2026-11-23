@@ -8,17 +8,40 @@ A goofy party game about Mongolian **Naadam**, made with **Godot 4.7** (GDScript
 2. Open Godot → **Import** → choose the `project.godot` file in this folder.
 3. Press **F5** (or the ▶ button) to play.
 
-## Controls (Bökh / wrestling prototype)
-| | Move | Push |
-|---|---|---|
-| Player 1 (red) | W A S D | Space |
-| Player 2 (blue) | Arrow keys | Enter |
+## Controls (Bökh / wrestling)
+| | Move | Push | Grab |
+|---|---|---|---|
+| Player 1 (red) | W A S D | Space | Left Shift |
+| Player 2 (blue) | Arrow keys | Enter | Right Shift |
+| Gamepad 1 / 2 | Left stick | A | X |
 
-**R** = restart.
+**C** = Player 2 human / computer. **R** = restart.
 
 **Real bökh rule:** you lose if your **knee, elbow or back** touches the grass, or if you leave the ring.
-Your **palms are allowed** on the grass: when you are tipping over, press your push button to
+Your **palms are allowed** on the grass: when you are tipping over, press PUSH to
 throw your palms down = **PALM SAVE**. It has a cooldown, so time it well.
+
+### Grips and techniques (мэх)
+1. **GRAB** when close = take a grip (барьц). Hold it **1.2 s** = **locked grip** (лав барьц), every technique gets stronger.
+2. With a grip, **GRAB + a direction** = a real technique. The game picks the one that fits:
+
+| Direction | Rival is... | Technique |
+|---|---|---|
+| toward him | leaning back | **Тахимдах** – knee-back pick |
+| toward him | standing | **Дэгээдэх** – inside leg hook |
+| away (pull) | coming in / leaning forward | **Ачих** – shoulder load throw |
+| away (pull) | standing | **Сээрэн дунгуй** – hip roll |
+| sideways | stepping sideways | **Өсгийдөх** – heel sweep |
+| sideways | – (locked grip) | **Гуядах** – thigh lift |
+| sideways / none | – | **Мушгих** – twist down |
+| none | – (locked grip) | **Тонгорох** – lift and flip back |
+| run at him + GRAB (no grip) | – | **Хөл авах** – leg grab dive |
+
+3. When the rival starts a technique, a **!** appears over your head. Press **GRAB** fast = **Хариулт (counter)**: you throw *him*.
+4. Tip: push and pull with the grip to make him lean, **then** throw the way he leans. Off-balance rivals fall much easier.
+5. **PUSH** while he holds you = break his grip.
+
+Each technique can land **clean** (hard fall), **partial** (you're tipping: PALM SAVE can still rescue you!) or **fail** (he dodges, зайллаа).
 
 First to 3 wins becomes **Arslan (Lion)**. The loser becomes **Bayan Khodood** ("full stomach"),
 like the last horse at Naadam: celebrated, arrogant, and starts the rematch heavier.
@@ -26,15 +49,20 @@ like the last horse at Naadam: celebrated, arrogant, and starts the rematch heav
 ## Project structure
 ```
 scenes/
-  main.tscn        - wrestling arena (ground, ring, camera, UI)
+  main.tscn        - wrestling arena (field, camera, UI)
   player.tscn      - one wobbly wrestler (RigidBody3D)
 scripts/
   input_setup.gd   - keyboard controls for both players (change keys here)
-  player.gd        - movement, wobble, push
+  player.gd        - movement, wobble, push, grip, techniques, being thrown, CPU wrestler
+  mekh.gd          - the techniques (мэх) table: names, chances, how each one throws
+  field_builder.gd - the Naadam field: grass, Nine White Banners, gers, crowd, mountains
+  camera_rig.gd    - camera that follows the wrestlers and zooms
   arena.gd         - round rules (knee/elbow/back), score, Bayan Khodood ending
   title_forge.gd   - zasuul announcer: builds grand champion titles
   character_animator.gd - picks animations (placeholder or Blender model)
   juice.gd         - effects: camera shake, hit-stop, squash, dust, confetti
+tests/
+  sim_cpu.gd       - CPU vs CPU balance test (headless)
 assets/
   models/          - Blender models go here (export as .glb)
   sounds/          - sound effects and music
@@ -47,6 +75,10 @@ Click `Player1` / `Player2` in `main.tscn` and change values in the **Inspector*
 **Important:** `push_strength` makes the rival SLIDE (ring-outs). `push_tip` makes the rival
 TIP OVER (knee/elbow/back falls). With the old value (push 7, tip 3) every test round ended
 by ring-out, so the bökh rule never happened. New defaults: push 4, tip 8, upright 20.
+
+Techniques: chances and throw shapes are in `scripts/mekh.gd` (`TABLE`). Grip feel is in the
+**Grip and techniques** group on the player (`grip_spring`, `lock_time`, `grab_range`...).
+Balance test: `godot --headless --fixed-fps 60 -s res://tests/sim_cpu.gd`.
 
 ## Adding Blender models + animations
 See **[ANIMATIONS.md](ANIMATIONS.md)** – clip names, export steps, and how the
@@ -64,8 +96,10 @@ See **[CREATIVE_DIRECTION.md](CREATIVE_DIRECTION.md)** for the research, the big
 - [x] Real bökh rule (knee/elbow/back) + palm save
 - [x] Bayan Khodood ending + zasuul titles
 - [ ] Make wrestling feel fun (playtest with REAL people + tune!)
+- [x] Grips + 10 real techniques (мэх) + counters, CPU opponent
+- [x] Naadam field: Nine White Banners, gers, crowd, mountains
 - [x] Animation system (placeholder animations, eagle dance, effects)
-- [ ] Real character models + clips (Blender) – see ANIMATIONS.md
+- [x] Real character model v2 (chunky human, detailed costume) + 23 clips – see ANIMATIONS.md
 - [ ] Main menu
 - [x] Sur kharvaa (archery) – web version (`web/`), Godot port still to do
 - [ ] Morin uraldaan (horse racing) mini-game

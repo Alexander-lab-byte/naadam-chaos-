@@ -16,6 +16,10 @@ extends Node3D
 @onready var p2: RigidBody3D = $Player2
 @onready var label: Label = $UI/Message
 @onready var score_label: Label = $UI/Score
+@onready var controls_label: Label = $UI/Controls
+
+## Survives pressing R: is Player 2 the computer?
+static var p2_cpu := false
 
 ## Survives pressing R (scene reload): who got the "full stomach" blessing.
 static var blessed_player := ""
@@ -30,7 +34,12 @@ var _start := {}
 func _ready() -> void:
 	_start[p1] = p1.global_transform
 	_start[p2] = p2.global_transform
+	p2.is_cpu = p2_cpu
 	_update_score()
+	_update_controls()
+	for p in [p1, p2]:
+		p.anim.play_ready()                  # slap the thighs: ready!
+		p.mekh_done.connect(_on_mekh)
 	if blessed_player != "":
 		var p := p1 if blessed_player == "p1" else p2
 		p.mass *= full_stomach_mass
@@ -47,6 +56,11 @@ func _physics_process(delta: float) -> void:
 	if Input.is_action_just_pressed("restart"):
 		get_tree().reload_current_scene()
 		return
+	if Input.is_action_just_pressed("toggle_cpu"):
+		p2_cpu = not p2_cpu
+		p2.is_cpu = p2_cpu
+		_update_controls()
+		_show("Player 2 is now %s" % ("the COMPUTER" if p2_cpu else "a HUMAN"), 1.5)
 	if _round_over:
 		return
 	for p in [p1, p2]:
@@ -82,6 +96,7 @@ func _end_round(winner: RigidBody3D, loser: RigidBody3D, reason: String) -> void
 	Juice.dust(loser.global_position + Vector3.DOWN * 0.6, 30)
 	Juice.confetti(winner.global_position + Vector3.UP * 1.5)
 	Juice.shake(0.35, 0.4)
+	get_tree().call_group("field", "cheer", 1.0)
 
 	var what := {
 		"knee": "KNEE touched the grass!",
@@ -89,12 +104,19 @@ func _end_round(winner: RigidBody3D, loser: RigidBody3D, reason: String) -> void
 		"back": "landed on the BACK!",
 		"ring": "left the ring!",
 	}
-	var title := TitleForge.forge(scores[winner.player_id], winner.stats, reason == "ring")
+	# was it a technique (мэх)? A throw that landed in the last 2.5 s counts.
+	var mekh_id := ""
+	var tb: Dictionary = loser.thrown_by
+	if not tb.is_empty() and tb.by == winner and Time.get_ticks_msec() - int(tb.time) < 2500:
+		mekh_id = tb.id
+	var title := TitleForge.forge(scores[winner.player_id], winner.stats, reason == "ring", mekh_id)
 	Juice.pop_text(reason.to_upper() + "!", loser.global_position + Vector3.UP * 1.5, Color.ORANGE_RED)
+	if mekh_id != "":
+		what[reason] = "%s - thrown with %s (%s)" % [what[reason], Mekh.TABLE[mekh_id].mn, mekh_id.capitalize()]
 
 	if scores[winner.player_id] >= points_to_win:
 		# match champion gets the real tournament-winner title: Arslan (Lion)
-		_crown(winner, loser, TitleForge.forge(4, winner.stats, reason == "ring"))
+		_crown(winner, loser, TitleForge.forge(4, winner.stats, reason == "ring", mekh_id))
 		return
 	_show("%s's %s\nZasuul: \"%s, %s!\"" % [_name(loser), what[reason], _name(winner), title], 2.6)
 	await get_tree().create_timer(2.6).timeout
@@ -121,20 +143,29 @@ func _crown(winner: RigidBody3D, loser: RigidBody3D, title: String) -> void:
 
 func _reset_round() -> void:
 	for p in [p1, p2]:
+		p.reset_state()
 		p.global_transform = _start[p]
 		p.linear_velocity = Vector3.ZERO
 		p.angular_velocity = Vector3.ZERO
-		p.is_out = false
-		p.keep_upright = false
-		p.bracing = false
 		p.anim.reset()
+		p.anim.play_ready()
 		_touch_timer[p.player_id] = 0.0
 	_round_over = false
 	_show("FIGHT!", 1.0)
 
 
+func _on_mekh(_attacker: RigidBody3D, _victim: RigidBody3D, _id: String, result: String) -> void:
+	get_tree().call_group("field", "cheer", 0.8 if result != "fail" else 0.4)
+
+
 func _name(p: RigidBody3D) -> String:
 	return "Player 1" if p.player_id == "p1" else "Player 2"
+
+
+func _update_controls() -> void:
+	var p2_text := "P2: COMPUTER" if p2_cpu else "P2: arrows + ENTER push + RIGHT SHIFT grab"
+	controls_label.text = "P1: WASD + SPACE push + LEFT SHIFT grab    %s    C: P2 human/CPU    R: restart\n" % p2_text \
+		+ "GRAB = take a grip.  With a grip: GRAB + direction = technique (мэх).  GRAB when he attacks = COUNTER.  Tipping? PUSH = palm save"
 
 
 func _update_score() -> void:

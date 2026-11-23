@@ -42,6 +42,29 @@ Make these once. Every wrestler, jockey and archer reuses them.
 | `palm_brace` | no | ~0.8 s, palms slam down to the grass to stop a fall, panicked face |
 | `bayan_khodood_strut` | yes | the loser's ARROGANT swagger: chest out, hands on hips, nose up. Funnier = better |
 | `stumble` | no | ~0.8 s, trip + windmill arms. Plays instead of `hit` when you get hit while running fast |
+| `thigh_slap` | no | ~1 s, slap the thighs before the bout: "ready!" (real bökh custom) |
+| `grab` | no | ~0.27 s, lunge in and take the grip (барьц) |
+| `grip_idle` | yes | bent forward, holding the rival's zodog, pulling and leaning |
+| `thrown` | yes | flailing in the air after a throw. The physics body does the flying |
+
+### Techniques (мэх) – one clip per technique, played by the thrower
+The thrown wrestler is moved by code (`player.gd → begin_thrown()`), then physics takes over for the landing.
+
+| Clip | Technique | What the thrower does |
+|---|---|---|
+| `achikh` | Ачих | turns his back in, loads the rival on his back, throws him over the shoulder |
+| `seeren_dungui` | Сээрэн дунгуй | turns side-on and rolls the rival over his hip |
+| `degeedekh` | Дэгээдэх | hooks the rival's leg from the inside and drives forward |
+| `takhimdakh` | Тахимдах | drops low, catches behind the knee, pushes the rival over backwards |
+| `usgiidukh` | Өсгийдөх | sweeps the rival's heel from behind |
+| `guyadakh` | Гуядах | steps in and lifts the rival with his thigh, twisting |
+| `mushgikh` | Мушгих | twists the rival's upper body down to the side |
+| `tongorokh` | Тонгорох | lifts the rival off the grass and arches back |
+| `khul_avakh` | Хөл авах | dives for the leg (no grip needed) and lifts it |
+| `khariult` | Хариулт | counter: slips to the side and pulls the attacker past |
+
+**Anar, please check these against real bökh.** The names come from the list of 45 base
+techniques, but the moves were animated from the meaning of each word. Fix any that look wrong.
 
 Looping is set by code (`looping_clips` on the `Visual` node), so you don't need to tick Loop in the import dialog.
 
@@ -64,7 +87,7 @@ Other names? Change `clip_names` on the `Visual` node in the Inspector.
 
 Arrows are physics objects (`RigidBody3D`), **not** animations.
 
-## The bean wrestler (already in the game)
+## The wrestler (already in the game)
 
 | File | What it is |
 |---|---|
@@ -74,10 +97,18 @@ Arrows are physics objects (`RigidBody3D`), **not** animations.
 
 `art/blender` has a `.gdignore` file, so Godot ignores the .blend.
 
-What's inside:
-- **Rig**: 14 bones: `root`, `hips`, `chest`, `head`, `upper_arm/forearm/hand.L/R`, `thigh/shin.L/R`
+**v2 (Nov 2026): chunky stylized human** (was a bean). ~46k triangles.
+- **Body**: big round belly, broad shoulders, thick neck, short strong legs. Made from simple
+  shapes, merged into one smooth skin (voxel remesh + smooth).
+- **Face**: eyes, thick brows, round nose, thick wrestler's ears, red wind-burned cheeks, buzz cut.
+- **Zodog**: short sleeves, OPEN chest and belly (like the real one), gold trim, cord tied around the belly.
+- **Shuudag**: tight briefs with gold trim. **Gutal**: curled-up toes, red appliqué stripes, sole.
+- **Rig**: same 14 bones as v1: `root`, `hips`, `chest`, `head`, `upper_arm/forearm/hand.L/R`, `thigh/shin.L/R`
 - **Material `Team`** = zodog + shuudag. Godot paints it with `body_color` (red P1, blue P2)
 - **Shape key `full_stomach`**: the Bayan Khodood rematch belly. Set by `arena.gd`
+
+Change the look: edit the numbers in `build_wrestler.py` (sizes at the top, `build_body()`,
+`build_face()`, costume regions `zodog_region()` / `shuudag_region()`) and run it again.
 
 ### Change an animation
 1. Open `art/blender/bokh_wrestler.blend`. Click the **Rig**, switch to **Pose Mode** (Ctrl+Tab).

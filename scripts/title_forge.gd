@@ -18,13 +18,27 @@ const STYLE_WORDS := {
 	"default": ["Mighty One", "Dusty One", "Unshaken One", "Mutton-Powered One"],
 }
 
+## Words for winning with a technique (мэх)
+const MEKH_WORDS := {
+	"achikh": "Who Carries Rivals Like Firewood",
+	"seeren_dungui": "Roller of Rivals",
+	"degeedekh": "Hook of the Steppe",
+	"takhimdakh": "Knee-Taker",
+	"usgiidukh": "Heel-Sweeper",
+	"guyadakh": "Thigh of Thunder",
+	"mushgikh": "The Twister",
+	"tongorokh": "Who Flips Mountains",
+	"khul_avakh": "Leg-Thief",
+	"khariult": "Who Answers Every Attack",
+}
+
 const PLACES := ["of the Thousand Steppes", "of the Dusty Ring", "Beloved by Marmots",
 		"Whose Shadow Scares Yaks", "Fed on Khuushuur", "Who Eats Aaruul Without Water"]
 
 
 ## wins: how many rounds this player has won so far (1, 2, 3...)
 ## stats: the player's stats dictionary from player.gd
-static func forge(wins: int, stats: Dictionary, by_ring_out := false) -> String:
+static func forge(wins: int, stats: Dictionary, by_ring_out := false, mekh_id := "") -> String:
 	var rank: String = RANKS[clampi(wins - 1, 0, RANKS.size() - 1)]
 	var key := "default"
 	if by_ring_out:
@@ -35,6 +49,8 @@ static func forge(wins: int, stats: Dictionary, by_ring_out := false) -> String:
 		key = "pushes_landed"
 	var words: Array = STYLE_WORDS[key]
 	var title := "%s, the %s" % [rank, words.pick_random()]
+	if mekh_id != "" and MEKH_WORDS.has(mekh_id):
+		title = "%s, %s" % [rank, MEKH_WORDS[mekh_id]]
 	if wins >= 2:
 		title += ", " + PLACES.pick_random()
 	return title
