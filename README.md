@@ -55,15 +55,17 @@ scripts/
   input_setup.gd   - keyboard controls for both players (change keys here)
   player.gd        - movement, wobble, push, grip, techniques, being thrown, CPU wrestler
   mekh.gd          - the techniques (мэх) table: names, chances, how each one throws
-  field_builder.gd - the Naadam field: grass, Nine White Banners, gers, crowd, mountains
+  field_builder.gd - the Naadam field: places terrain, grass, banners, gers, crowd, flags, trees, eagles
   camera_rig.gd    - camera that follows the wrestlers and zooms
   arena.gd         - round rules (knee/elbow/back), score, Bayan Khodood ending
   title_forge.gd   - zasuul announcer: builds grand champion titles
   character_animator.gd - picks animations (placeholder or Blender model)
   juice.gd         - effects: camera shake, hit-stop, squash, dust, confetti
+shaders/           - terrain, grass, sky, crowd, flag, horsehair, foliage, eagle (+ common.gdshaderinc)
 tests/
   sim_cpu.gd       - CPU vs CPU balance test (headless)
 assets/
+  env/             - terrain.glb, naadam_props.glb, scatter.json, textures/ (made by the Blender scripts)
   models/          - Blender models go here (export as .glb)
   sounds/          - sound effects and music
 ```
@@ -79,6 +81,21 @@ by ring-out, so the bökh rule never happened. New defaults: push 4, tip 8, upri
 Techniques: chances and throw shapes are in `scripts/mekh.gd` (`TABLE`). Grip feel is in the
 **Grip and techniques** group on the player (`grip_spring`, `lock_time`, `grab_range`...).
 Balance test: `godot --headless --fixed-fps 60 -s res://tests/sim_cpu.gd`.
+
+## The Naadam field (environment)
+Everything around the wrestlers is made in Blender by scripts, then brought to life by shaders:
+
+| File | What it makes |
+|---|---|
+| `art/blender/make_textures.py` | felt, ger door ornaments (өлзий, үүлэн хээ), horsehair, Mongolian flag with Soyombo, grass, dirt, rock |
+| `art/blender/build_environment.py` | `assets/env/terrain.glb` (steppe, hills, mountains), `assets/env/naadam_props.glb` (ger, banner, flag, grandstand, 8 crowd people, larch, rocks, eagle), `assets/env/scatter.json` |
+| `scripts/field_builder.gd` | places it all when the game starts |
+| `shaders/` | wind on grass, trees and horsehair; waving flags; moving clouds + cloud shadows; cheering crowd; eagles |
+
+Rebuild after changing a script: `python3 art/blender/make_textures.py`, then
+`blender -b -P art/blender/build_environment.py` (or run it from Blender's Scripting tab).
+
+**Slow computer?** Click `Field` in `main.tscn` and lower `grass_density` / `crowd_density`.
 
 ## Adding Blender models + animations
 See **[ANIMATIONS.md](ANIMATIONS.md)** – clip names, export steps, and how the
@@ -97,7 +114,7 @@ See **[CREATIVE_DIRECTION.md](CREATIVE_DIRECTION.md)** for the research, the big
 - [x] Bayan Khodood ending + zasuul titles
 - [ ] Make wrestling feel fun (playtest with REAL people + tune!)
 - [x] Grips + 10 real techniques (мэх) + counters, CPU opponent
-- [x] Naadam field: Nine White Banners, gers, crowd, mountains
+- [x] Naadam field v2: Blender terrain + mountains, 95k wind-blown grass blades, detailed gers, horsehair banners, cloth flags, 600+ animated crowd, larch forests, sky with clouds, eagles, smoke
 - [x] Animation system (placeholder animations, eagle dance, effects)
 - [x] Real character model v2 (chunky human, detailed costume) + 23 clips – see ANIMATIONS.md
 - [ ] Main menu

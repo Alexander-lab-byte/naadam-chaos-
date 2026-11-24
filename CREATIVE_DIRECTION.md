@@ -182,3 +182,29 @@ Falls: back 11, knee 6, elbow 4, ring-out 5. Before this update almost every fal
 - Is the leg dive (Хөл авах) too strong? CPU tests use it most.
 - Do players understand the "!" counter window? 0.2 s might be too short for beginners.
 - Anar: check the technique animations against real bökh, fix any that look wrong (see ANIMATIONS.md).
+
+---
+
+## 10. Environment v2 (2026-11-24): "no more cones and boxes"
+
+Goal from Anar: the field must look at least 10x better, natural, alive, not built from primitive shapes.
+Art direction: **stylized-natural** (soft, readable, a bit painterly). Not photoreal. The wrestlers stay chunky-cartoon.
+
+- **Terrain from Blender**: flat field (38 m), rolling steppe, big hills, a ridged mountain range and a big
+  Bogd Khan-like massif in the north. Shader: two-scale grass texture, dry patches, trampled circle, rock on steep slopes,
+  darker larch-forest floor, snow above ~400 m, far slopes a bit darker.
+- **95,000 grass blades** (MultiMesh, in 12.5 m chunks) with steady sway + rolling gusts. Short and trampled inside the circle.
+  Steppe flowers (white, yellow, purple) in patches.
+- **Moving cloud shadows** on ground, grass, trees and crowd (all shaders share `common.gdshaderinc`).
+- **Sky shader**: deep "Eternal Blue Sky" gradient, sun glow, drifting clouds.
+- **Props (Blender)**: ger (felt, ornament band, ropes, painted door with өлзий knot, toono, chimney + smoke),
+  Nine White Banners with 40 horsehair strands each (swing in the wind) and a trident top, Mongolian flags with the Soyombo
+  (cloth wave shader), grandstands with striped canopies, 8 crowd people (stand/sit × 4 hats), larch trees, rocks, eagles.
+- **Crowd**: 600+ people, each with its own deel color; they sway, and on big throws they jump and throw their arms up.
+- **Life**: eagles circling, chimney smoke, floating seeds, gers on the far hills, larch forests.
+- **Lighting**: sun from the side (long shadows = depth), SSAO, glow, filmic tonemap, light aerial fog.
+
+Performance knobs: `grass_density`, `crowd_density` on the `Field` node. Larch trees beyond 320 m use a light version.
+Not tested on a real GPU yet (my test machine renders in software). Check the FPS on the Mac.
+
+Next ideas: horse line (уяа) with tied horses, kids running around, wind sound + crowd sound, a dawn/sunset option.
