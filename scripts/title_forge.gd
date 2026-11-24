@@ -14,7 +14,6 @@ const RANKS := ["Nachin (Falcon)", "Khartsaga (Hawk)", "Zaan (Elephant)", "Arsla
 const STYLE_WORDS := {
 	"palm_saves": ["Never-Kneeler", "Palm of Iron", "Grass-Refuser"],
 	"pushes_landed": ["Thunder-Shover", "Ger-Toppler", "Wind-Pusher"],
-	"ring_out": ["Field-Clearer", "Sender to the Next Valley"],
 	"default": ["Mighty One", "Dusty One", "Unshaken One", "Mutton-Powered One"],
 }
 
@@ -38,12 +37,10 @@ const PLACES := ["of the Thousand Steppes", "of the Dusty Ring", "Beloved by Mar
 
 ## wins: how many rounds this player has won so far (1, 2, 3...)
 ## stats: the player's stats dictionary from player.gd
-static func forge(wins: int, stats: Dictionary, by_ring_out := false, mekh_id := "") -> String:
+static func forge(wins: int, stats: Dictionary, mekh_id := "") -> String:
 	var rank: String = RANKS[clampi(wins - 1, 0, RANKS.size() - 1)]
 	var key := "default"
-	if by_ring_out:
-		key = "ring_out"
-	elif stats.get("palm_saves", 0) > 0:
+	if stats.get("palm_saves", 0) > 0:
 		key = "palm_saves"
 	elif stats.get("pushes_landed", 0) >= 3:
 		key = "pushes_landed"

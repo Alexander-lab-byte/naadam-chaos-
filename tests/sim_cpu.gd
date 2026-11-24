@@ -54,6 +54,7 @@ func _process(delta: float) -> bool:
 		main._reset_round()
 	if t > float(OS.get_environment("SIM_T") if OS.get_environment("SIM_T") != "" else "120"):
 		log["grip_len"] = grip_len
+		log["zasuul_resets"] = main.zasuul_resets
 		print("RESULT ", JSON.stringify(log))
 		quit()
 	return false

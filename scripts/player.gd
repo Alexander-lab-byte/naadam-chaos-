@@ -14,7 +14,7 @@ extends RigidBody3D
 @export var is_cpu := false              ## computer-controlled (press C in game to switch P2)
 @export var move_force := 40.0           ## how hard the player pushes itself
 @export var max_speed := 6.0
-@export var push_strength := 4.0         ## sideways shove (high = rival SLIDES out of the ring)
+@export var push_strength := 4.0         ## sideways shove (high = rival SLIDES away instead of falling)
 @export var push_range := 2.0
 @export var push_cooldown := 0.6         ## seconds between pushes
 @export var push_tip := 8.0              ## how much a push TIPS the rival over (high = knee/elbow falls)
@@ -604,7 +604,7 @@ func _bot_input() -> Dictionary:
 		_bot.dir_t = randf_range(0.4, 1.0)
 		_bot.dir = (to + to.cross(Vector3.UP) * randf_range(-0.6, 0.6)).normalized()
 	out.dir = _bot.dir * (1.0 if dist > 2.4 else 0.35) if dist > 1.1 else Vector3.ZERO
-	# keep away from the ring edge
+	# stay near the middle (the zasuul pushes wanderers back anyway)
 	if _flat(global_position).length() > 4.5:
 		out.dir = (-_flat(global_position).normalized() + to).normalized()
 	if _mekh_cd <= 0.0 and dist < grab_range - 0.1 and randf() < 0.05:

@@ -2,12 +2,16 @@ extends Node3D
 ## Bökh (wrestling) round logic.
 ## REAL bökh rule: you lose when your KNEE, ELBOW or BACK touches the ground.
 ## Your PALMS may touch it - press PUSH while tipping over to do a "palm save".
-## In this game you also lose if you leave the ring.
+## Like real bökh there is NO ring and no ring-out: leaving the area never loses.
+## If the wrestlers drift too far, the zasuul brings them back to the middle
+## (a soft push back, and a quick reset if they wander far away).
 ##
 ## At the end of the match the loser is crowned BAYAN KHODOOD ("full stomach"),
 ## like the last horse at Naadam: celebrated, arrogant, and blessed for next time.
 
-@export var ring_radius := 6.0
+@export var field_radius := 7.5          ## soft edge: beyond this the wrestlers are pushed back
+@export var edge_push := 30.0             ## how strongly the edge pushes back
+@export var reset_radius := 11.0         ## this far out = zasuul stops the bout and brings them back
 @export var touch_time := 0.12           ## a touch must last this long (seconds) - filters glitches
 @export var points_to_win := 3
 @export var full_stomach_mass := 1.35    ## Bayan Khodood blessing: heavier = harder to push
@@ -25,7 +29,9 @@ static var p2_cpu := false
 static var blessed_player := ""
 
 var scores := {"p1": 0, "p2": 0}
-var last_loss_reason := ""               ## for tests / UI: "knee", "elbow", "back", "ring"
+var last_loss_reason := ""               ## for tests / UI: "knee", "elbow", "back"
+var zasuul_resets := 0                   ## for tests: how often the zasuul brought them back
+var _reset_cooldown := 0.0
 var _touch_timer := {"p1": 0.0, "p2": 0.0}
 var _round_over := false
 var _start := {}
@@ -63,6 +69,10 @@ func _physics_process(delta: float) -> void:
 		_show("Player 2 is now %s" % ("the COMPUTER" if p2_cpu else "a HUMAN"), 1.5)
 	if _round_over:
 		return
+	_reset_cooldown = maxf(_reset_cooldown - delta, 0.0)
+	for p in [p1, p2]:
+		if _keep_on_field(p):
+			return
 	for p in [p1, p2]:
 		var reason := _loss_reason(p, delta)
 		if reason != "":
@@ -72,15 +82,41 @@ func _physics_process(delta: float) -> void:
 
 
 func _loss_reason(p: RigidBody3D, delta: float) -> String:
-	var flat := Vector2(p.global_position.x, p.global_position.z)
-	if flat.length() > ring_radius or p.global_position.y < -2.0:
-		return "ring"
 	var part: String = p.ground_touch()
 	if part == "":
 		_touch_timer[p.player_id] = 0.0
 		return ""
 	_touch_timer[p.player_id] += delta
 	return part if _touch_timer[p.player_id] >= touch_time else ""
+
+
+## Real bökh has no ring. Instead: soft push back toward the middle, and if a wrestler
+## wanders far (or falls off the world) the zasuul stops the bout and brings both back.
+## Returns true if it reset the wrestlers this frame.
+func _keep_on_field(p: RigidBody3D) -> bool:
+	if p.is_thrown:
+		return false
+	var flat := Vector3(p.global_position.x, 0.0, p.global_position.z)
+	var d := flat.length()
+	if d > field_radius:
+		p.apply_central_force(-flat.normalized() * edge_push * (d - field_radius))
+	if (d > reset_radius or p.global_position.y < -2.0) and _reset_cooldown <= 0.0:
+		_zasuul_reset()
+		return true
+	return false
+
+
+func _zasuul_reset() -> void:
+	zasuul_resets += 1
+	_reset_cooldown = 1.0
+	for p in [p1, p2]:
+		p.reset_state()
+		p.global_transform = _start[p]
+		p.linear_velocity = Vector3.ZERO
+		p.angular_velocity = Vector3.ZERO
+		p.anim.reset()
+		_touch_timer[p.player_id] = 0.0
+	_show("ZASUUL: back to the middle!", 1.5)
 
 
 func _end_round(winner: RigidBody3D, loser: RigidBody3D, reason: String) -> void:
@@ -102,21 +138,20 @@ func _end_round(winner: RigidBody3D, loser: RigidBody3D, reason: String) -> void
 		"knee": "KNEE touched the grass!",
 		"elbow": "ELBOW touched the grass!",
 		"back": "landed on the BACK!",
-		"ring": "left the ring!",
 	}
 	# was it a technique (мэх)? A throw that landed in the last 2.5 s counts.
 	var mekh_id := ""
 	var tb: Dictionary = loser.thrown_by
 	if not tb.is_empty() and tb.by == winner and Time.get_ticks_msec() - int(tb.time) < 2500:
 		mekh_id = tb.id
-	var title := TitleForge.forge(scores[winner.player_id], winner.stats, reason == "ring", mekh_id)
+	var title := TitleForge.forge(scores[winner.player_id], winner.stats, mekh_id)
 	Juice.pop_text(reason.to_upper() + "!", loser.global_position + Vector3.UP * 1.5, Color.ORANGE_RED)
 	if mekh_id != "":
 		what[reason] = "%s - thrown with %s (%s)" % [what[reason], Mekh.TABLE[mekh_id].mn, mekh_id.capitalize()]
 
 	if scores[winner.player_id] >= points_to_win:
 		# match champion gets the real tournament-winner title: Arslan (Lion)
-		_crown(winner, loser, TitleForge.forge(4, winner.stats, reason == "ring", mekh_id))
+		_crown(winner, loser, TitleForge.forge(4, winner.stats, mekh_id))
 		return
 	_show("%s's %s\nZasuul: \"%s, %s!\"" % [_name(loser), what[reason], _name(winner), title], 2.6)
 	await get_tree().create_timer(2.6).timeout

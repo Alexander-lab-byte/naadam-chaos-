@@ -17,7 +17,8 @@ A goofy party game about Mongolian **Naadam**, made with **Godot 4.7** (GDScript
 
 **C** = Player 2 human / computer. **R** = restart.
 
-**Real bökh rule:** you lose if your **knee, elbow or back** touches the grass, or if you leave the ring.
+**Real bökh rule:** you lose ONLY if your **knee, elbow or back** touches the grass. There is **no ring** and no ring-out:
+if you drift too far, the zasuul pushes you back, and if you wander far away he brings both wrestlers back to the middle.
 Your **palms are allowed** on the grass: when you are tipping over, press PUSH to
 throw your palms down = **PALM SAVE**. It has a cooldown, so time it well.
 
@@ -74,9 +75,10 @@ assets/
 Click `Player1` / `Player2` in `main.tscn` and change values in the **Inspector**:
 `move_force`, `push_strength`, `push_tip`, `upright_strength` (lower = more wobbly), etc.
 
-**Important:** `push_strength` makes the rival SLIDE (ring-outs). `push_tip` makes the rival
+**Important:** `push_strength` makes the rival SLIDE away. `push_tip` makes the rival
 TIP OVER (knee/elbow/back falls). With the old value (push 7, tip 3) every test round ended
 by ring-out, so the bökh rule never happened. New defaults: push 4, tip 8, upright 20.
+(Ring-out was removed later: real bökh has no ring. The soft edge is `field_radius` / `reset_radius` on `Main`.)
 
 Techniques: chances and throw shapes are in `scripts/mekh.gd` (`TABLE`). Grip feel is in the
 **Grip and techniques** group on the player (`grip_spring`, `lock_time`, `grab_range`...).
